@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import './myProvider.dart';
@@ -6,19 +8,25 @@ void main() {
   runApp(ProviderScope(child: MyApp()));
 }
 
-final myProvider = Provider((ref) => 20);
-final myProviderSate = StateProvider((ref) => 100);
+class myNotifer extends StateNotifier<List<String>> {
+  myNotifer() : super([]);
+
+  void addString(String stringToAdd) {
+    state = [...state, stringToAdd];
+  }
+}
+
+final myProvider = StateNotifierProvider((ref) => myNotifer());
 
 class MyApp extends ConsumerWidget {
-  const MyApp({Key? key}) : super(key: key);
+  MyApp({Key? key}) : super(key: key);
 
   final int number = 1;
+  Random rand = Random();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    int myNumber = ref.watch(myProvider);
-    int myNumber2 = ref.watch(thirdProvider);
-    int myNumberState = ref.watch(myProviderSate);
+    final listOfStrings = ref.watch(myProvider) as List;
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
@@ -26,13 +34,17 @@ class MyApp extends ConsumerWidget {
             IconButton(
               icon: const Icon(Icons.add),
               onPressed: () => {
-                ref.read(myProviderSate.state).state++,
-                print("added "),
+                ref
+                    .read(myProvider.notifier)
+                    .addString("Mike ${rand.nextInt(100)}")
               },
             )
           ],
         ),
-        body: Center(child: Text("some number $myNumberState")),
+        body: Center(
+            child: Column(
+          children: [...listOfStrings.map((string) => Text(string))],
+        )),
       ),
     );
   }
